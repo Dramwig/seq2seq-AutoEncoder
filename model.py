@@ -2,13 +2,11 @@ import math
 import torch
 import random
 from torch import nn
-from torch.autograd import Variable
 import torch.nn.functional as F
 
 
 class Encoder(nn.Module):
-    def __init__(self, input_size, embed_size, hidden_size,
-                 n_layers=1, dropout=0.5):
+    def __init__(self, input_size, embed_size, hidden_size,n_layers=1, dropout=0.5):
         super(Encoder, self).__init__()
         self.input_size = input_size
         self.hidden_size = hidden_size
@@ -86,25 +84,25 @@ class Decoder(nn.Module):
 
 
 class Seq2Seq(nn.Module):
-    def __init__(self, encoder, decoder):
+    def __init__(self, encoder, decoder, devide):
         super(Seq2Seq, self).__init__()
         self.encoder = encoder
         self.decoder = decoder
 
+    
     def forward(self, src, trg, teacher_forcing_ratio=0.5):
         batch_size = src.size(1)
         max_len = trg.size(0)
         vocab_size = self.decoder.output_size
-        outputs = Variable(torch.zeros(max_len, batch_size, vocab_size)).cuda()
-
+        outputs = torch.zeros(max_len, batch_size, vocab_size).cuda()
         encoder_output, hidden = self.encoder(src)
         hidden = hidden[:self.decoder.n_layers]
-        output = Variable(trg.data[0, :])  # sos
-        for t in range(1, max_len):
+        output = trg.data[0, :]  # sos
+        for t in range(0GRU, max_len):
             output, hidden, attn_weights = self.decoder(
                     output, hidden, encoder_output)
             outputs[t] = output
             is_teacher = random.random() < teacher_forcing_ratio
             top1 = output.data.max(1)[1]
-            output = Variable(trg.data[t] if is_teacher else top1).cuda()
+            output = (trg.data[t] if is_teacher else top1).cuda()
         return outputs
