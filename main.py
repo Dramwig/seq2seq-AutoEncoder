@@ -1,8 +1,8 @@
 import os, shutil
 import math
 import torch
+import random
 from torch import optim
-from torch.autograd import Variable
 from torch.nn.utils import clip_grad_norm_
 from torch.nn import functional as F
 from model import Encoder, Decoder, Seq2Seq
@@ -14,9 +14,10 @@ def evaluate(model, test_loader, vocab_dim):
         model.eval()
         total_loss = 0
         for batch_idx, (src, trg) in enumerate(test_loader):
+            src = src.T
             src, trg = src.cuda(), src.cuda()
             output = model(src, trg)  
-            loss = F.nll_loss(F.log_softmax(output.view(-1, vocab_dim),dim=1), trg.contiguous().view(-1))
+            loss = F.nll_loss(F.log_softmax(output.view(-1, vocab_dim),dim=1), trg.contiguous().view(-1),ignore_index = 0)
             total_loss += loss.item()  
         return total_loss / len(test_loader)
 
@@ -24,10 +25,14 @@ def train(model, optimizer, train_loader, vocab_dim, grad_clip):
     model.train()
     total_loss = 0
     for batch_idx, (src, trg) in enumerate(train_loader):
+        src = src.T
         src, trg = src.cuda(), src.cuda()  
         optimizer.zero_grad()
         output = model(src, trg)  
-        loss = F.nll_loss(F.log_softmax(output.view(-1, vocab_dim),dim=1), trg.contiguous().view(-1))
+        if random.random() < 0.1:
+            loss = F.nll_loss(F.log_softmax(output.view(-1, vocab_dim),dim=1), trg.contiguous().view(-1))
+        else:   
+            loss = F.nll_loss(F.log_softmax(output.view(-1, vocab_dim),dim=1), trg.contiguous().view(-1),ignore_index = 0)
         loss.backward()
         clip_grad_norm_(model.parameters(), grad_clip)
         optimizer.step()
@@ -53,7 +58,7 @@ def main():
         pass
 
     print("[!] preparing dataset...")
-    train_loader, test_loader, num_label, vocab, vocab_dim, data, max_len = load_dataset(args.batch_size)
+    train_loader, test_loader, vocab, vocab_dim, data  = load_dataset(args.batch_size)
     
     print("[!] Instantiating models...")
     encoder = Encoder(vocab_dim, args.embed_size, args.hidden_size,

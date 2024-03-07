@@ -9,24 +9,18 @@ def evaluate(model, test_loader, vocab_dim):
         model.eval()
         total_loss = 0
         for batch_idx, (src, trg) in enumerate(test_loader):
+            src = src.T
             src, trg = src.cuda(), src.cuda()
             output = model(src, trg)  
             
-            print(src)
-            print(src.shape)
-            print(src.size(0), src.size(1))
-            output_2d = torch.argmax(output, dim=-1)
-            print(output_2d)
-            print(output_2d.shape)
-            print(F.log_softmax(output.view(-1, vocab_dim),dim=1))
-            index = 0
-            input_d = torch.squeeze(src[index,:], dim=-1)
-            output_d = torch.squeeze(torch.argmax(output[index,:,:], dim=-1))
-            print(rebuild(input_d, vocab))
-            print(rebuild(output_d, vocab))
-            input()
+            # print(src)
+            # print(src.shape)
+            # output_2d = torch.argmax(output, dim=-1)
+            # print(output_2d)
+            # print(output_2d.shape)
+            # input()
             
-            loss = F.nll_loss(F.log_softmax(output.view(-1, vocab_dim),dim=1), trg.contiguous().view(-1))
+            loss = F.nll_loss(F.log_softmax(output.view(-1, vocab_dim),dim=1), trg.contiguous().view(-1), ignore_index = 0)
             total_loss += loss.item()  
         return total_loss / len(test_loader)
 
@@ -64,11 +58,11 @@ def translate_sentence(sentence, model, device, vocab, max_len):
 # Main execution
 if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    model_path = './.save/seq2seq_1_0.58.pt'
+    model_path = './.save/seq2seq_1_0.48.pt'
     filename = 'base.yaml'
     args = load_arguments_from_yaml(filename)
     
-    train_loader, test_loader, num_label, vocab, vocab_dim, data, max_len = load_dataset(args.batch_size)
+    train_loader, test_loader, vocab, vocab_dim, data = load_dataset(args.batch_size)
     encoder = Encoder(vocab_dim, args.embed_size, args.hidden_size,
                       n_layers=args.n_layers, dropout=args.encoder_dropout)
     decoder = Decoder(args.embed_size, args.hidden_size, vocab_dim,

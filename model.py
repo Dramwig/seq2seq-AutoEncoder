@@ -91,6 +91,7 @@ class Seq2Seq(nn.Module):
         # cell = [n layers * n directions, batch size, hidden dim]
         # first input to the decoder is the <sos> tokens
         input = trg[0, :]
+        outputs[0,:,1] = 1
         # input = [batch size]
         for t in range(1, trg_length):
             # insert input token embedding, previous hidden and previous cell states
