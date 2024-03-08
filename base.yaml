@@ -1,4 +1,4 @@
-batch_size: 100
+batch_size: 200
 epochs: 100
 grad_clip: 10.0 # in case of gradient explosion
 lr: 0.02 # initial learning rate

@@ -32,18 +32,20 @@ def load_model(model_path, model, device):
     return model
 
 # Assuming the `build` function correctly prepares your source sentence.
-def translate_sentence(sentence, model, device, vocab, max_len):
+def translate_sentence(sentence, model, device, vocab):
     model.eval()
     print(sentence)
 
     # Convert the source sentence to indices and to tensor
-    src_indices = build(sentence, vocab, max_len)
+    src_indices = build(sentence, vocab)
     src_tensor = torch.tensor(src_indices).unsqueeze(0)  # Add batch dimension
     src_tensor = src_tensor.to(device)  # Move to the correct device
+    src_tensor = src_tensor.T
+    # print(src_tensor)
 
     # No need for TensorDataset; directly use the tensor for inference
     with torch.no_grad():  # Do not compute gradients
-        output = model(src_tensor, src_tensor)
+        output = model(src_tensor, src_tensor, 0)  # Turn off teacher forcing (0%)
         
     # 赋值给二维张量
     # 获取最后一维的最大值索引
@@ -58,7 +60,7 @@ def translate_sentence(sentence, model, device, vocab, max_len):
 # Main execution
 if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    model_path = './.save/seq2seq_1_0.48.pt'
+    model_path = './.save/seq2seq_18_2.15.pt'
     filename = 'base.yaml'
     args = load_arguments_from_yaml(filename)
     
@@ -79,4 +81,4 @@ if __name__ == "__main__":
             break
         
         # sentence = data['url'][0]
-        translate_sentence(sentence, model, device, vocab, max_len)
+        translate_sentence(sentence, model, device, vocab)

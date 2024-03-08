@@ -12,10 +12,10 @@ def load_arguments_from_yaml(filename):
         args_dict = yaml.safe_load(f)
     return argparse.Namespace(**args_dict)
 
-def build(sentence, vocab, max_len):
+def build(sentence, vocab,):
     tokens = list(sentence)
     tokens = ['<'] + tokens + ['>']
-    tokens = tokens + [''] * (max_len - len(tokens))
+    # tokens = tokens + [''] * (max_len - len(tokens))
     return [vocab[token] for token in tokens]
 
 def rebuild(sentence, vocab):
