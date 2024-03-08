@@ -48,6 +48,5 @@ Based on the following implementations
 * [keon/seq2seq: Minimal Seq2Seq model with Attention for Neural Machine Translation in PyTorch (github.com)](https://github.com/keon/seq2seq)
 
 - [bentrevett/pytorch-seq2seq: Tutorials on implementing a few sequence-to-sequence (seq2seq) models with PyTorch and TorchText. (github.com)](https://github.com/bentrevett/pytorch-seq2seq)
-  # seq2seq-AutoEncoder
   
   
